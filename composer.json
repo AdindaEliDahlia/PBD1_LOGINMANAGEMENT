@@ -1,0 +1,29 @@
+{
+    "name": "programmer-zaman-now/pbd-login-management",
+    "description": "pbd-login-management",
+    "type": "project",
+    "authors": [
+        {
+            "name": "kelompok 1",
+            "email": "kelompok1@gmail.com"
+        }
+    ],
+    "require": {
+        "php" : ">=8",
+        "ext-pdo": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.5.8",
+        "ext-mysql_xdevapi": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "ProgrammerZamanNow\\Belajar\\PHP\\MVC\\" : "app"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ProgrammerZamanNow\\Belajar\\PHP\\MVC\\" : "test"
+        }
+    }
+}
