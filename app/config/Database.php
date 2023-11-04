@@ -22,4 +22,16 @@ public  static  function getConnection(string $env = "test"): \PDO{
         return self::$pdo;
     }
 
+    public static function beginTranstaction(){
+        self::$pdo->beginTransaction();
+    }
+
+    public static function commitTranstaction(){
+        self::$pdo->commit();
+    }
+
+    public static function roolbackTranstaction(){
+        self::$pdo->roolBack();
+    }
+
 }
