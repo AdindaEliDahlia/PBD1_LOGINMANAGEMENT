@@ -2,6 +2,7 @@
 
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Repository;
 
+use mysql_xdevapi\Statement;
 use phpDocumentor\Reflection\Types\Null_;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
 
@@ -20,6 +21,16 @@ class UserRepository
        ]);
         return $user;
     }
+
+    public function update(User $user): User
+    {
+        $Statement = $this->connection->prepare("UPDATE users SET name = ?, password = ? WHERE id =?");
+        $Statement->execute([
+            $user->name, $user->password, $user->id
+        ]);
+        return $user;
+    }
+
     public function findById(string $id): ?User{
         $statement= $this->connection->prepare("SELECT id,name,password FROM users WHERE id = ?");
         $statement->execute([$id]);

@@ -3,13 +3,37 @@
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller;
 
 use ProgrammerZamanNow\Belajar\PHP\MVC\App\View;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\Session;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Service\SessionService;
 
 class HomeController
 {
+    private SessionService $sessionService;
 
-   function index(){
-       View::render('Home/index',[
-           "title" => "PHP Login Manajement"
-       ]);
-   }
+    public function __construct()
+    {
+        $connection = Database::getConnection();
+        $sessionRepository = new SessionRepository($connection);
+        $userRepository = new UserRepository($connection);
+        $this->sessionService = new SessionService($sessionRepository, $userRepository);
+
+    }
+
+    function index()
+    {
+        $user = $this->sessionService->current();
+        if ($user == null) {
+            View::render('Home/index', [
+                "title" => "PHP Login Management"
+            ]);
+
+        } else {
+            View::render('Home/dashboard', [
+                "title" => "Dashboard",
+                "user" => [
+                    "name" => $user->name
+                ]
+            ]);
+        }
+    }
 }
