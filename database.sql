@@ -1,17 +1,19 @@
-CREATE DATABASE php_login_mangement;
+CREATE DATABASE php_login_management;
 
-CREATE DATABASE php_login_mangement_test;
+CREATE DATABASE php_login_management_test;
 
 CREATE TABLE users(
-    id varchar(255) primary key ,
-    name varchar(255) not null ,
-    password varchar(255) not null
-)engine InnoDB;
+    id VARCHAR(255) PRIMARY KEY ,
+    name VARCHAR(255) NOT NULL ,
+    password VARCHAR(255) NOT NULL
+) ENGINE InnoDB;
 
-create table sessions(
-    id varchar(255) primary key ,
-    user_id varchar(255) not null
-)engine InnoDB;
+CREATE TABLE sessions(
+    id VARCHAR(255) PRIMARY KEY ,
+    user_id VARCHAR(255) NOT NULL
+)ENGINE InnoDB;
 
-alter table sessions
-add constraint  fk_sessions_user foreign key (user_id) references users(id);
+ALTER TABLE sessions
+ADD CONSTRAINT fk_sessions_user
+    FOREIGN KEY (user_id)
+        REFERENCES users(id);

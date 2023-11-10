@@ -2,12 +2,18 @@
 
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Service;
 
-use Cassandra\Exception\ValidationException;
-use ProgrammerZamanNow\Belajar\PHP\MVC\config\Database;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Config\Database;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Exception\ValidationException;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserLoginRequest;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserLoginResponse;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserPasswordUpdateRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserPasswordUpdateResponse;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
-use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateRespons;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateResponse;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserRegisterRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserRegisterResponse;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
 
 class UserService
 {
@@ -23,10 +29,10 @@ class UserService
         $this->validateUserRegistrationRequest($request);
 
         try {
-            Database::beginTranstaction();
-            $user = $this->userRepository->findById($request);
+            Database::beginTransaction();
+            $user = $this->userRepository->findById($request->id);
             if ($user != null) {
-                throw new ValidationException("User id already exists");
+                throw new ValidationException("User Id already exists");
             }
 
             $user = new User();
@@ -38,25 +44,26 @@ class UserService
 
             $response = new UserRegisterResponse();
             $response->user = $user;
-            Database::commitTranstaction();
+
+            Database::commitTransaction();
             return $response;
-        } catch (Exception $exception) {
-            Database::roolbackTranstaction();
+        } catch (\Exception $exception) {
+            Database::rollbackTransaction();
             throw $exception;
         }
     }
 
     private function validateUserRegistrationRequest(UserRegisterRequest $request)
     {
-        if ($request->id = null || $request->name = null || $request->password = null ||
-                    trim($request->id) == "" || trim($request->name) == "" || trim($request->password) == "") {
-            throw new  ValidationException("Id, Name, Password can not blank");
+        if ($request->id == null || $request->name == null || $request->password == null ||
+            trim($request->id) == "" || trim($request->name) == "" || trim($request->password) == "") {
+            throw new ValidationException("Id, Name, Password can not blank");
         }
     }
 
     public function login(UserLoginRequest $request): UserLoginResponse
     {
-        $this->validationLoginRequest($request);
+        $this->validateUserLoginRequest($request);
 
         $user = $this->userRepository->findById($request->id);
         if ($user == null) {
@@ -72,46 +79,48 @@ class UserService
         }
     }
 
-    private function validationLoginRequest(UserLoginRequest $request)
+    private function validateUserLoginRequest(UserLoginRequest $request)
     {
-        if ($request->id = null || $request->password = null ||
-                trim($request->id) == "" || trim($request->password) == "") {
-            throw new  ValidationException("Id, Password can not blank");
+        if ($request->id == null || $request->password == null ||
+            trim($request->id) == "" || trim($request->password) == "") {
+            throw new ValidationException("Id, Password can not blank");
         }
     }
 
-    public function updateProfile(UserProfileUpdateRequest $request): UserProfileUpdateRespons
+    public function updateProfile(UserProfileUpdateRequest $request): UserProfileUpdateResponse
     {
         $this->validateUserProfileUpdateRequest($request);
+
         try {
-            Database::beginTranstaction();
+            Database::beginTransaction();
 
             $user = $this->userRepository->findById($request->id);
             if ($user == null) {
-                throw  new ValidationException("User is not found");
+                throw new ValidationException("User is not found");
             }
 
             $user->name = $request->name;
-            $this->userRepository->save($user);
+            $this->userRepository->update($user);
 
-            Database::commitTranstaction();
+            Database::commitTransaction();
 
-            $response = new UserProfileUpdateRespons();
+            $response = new UserProfileUpdateResponse();
             $response->user = $user;
             return $response;
         } catch (\Exception $exception) {
-            Database::roolbackTranstaction();
+            Database::rollbackTransaction();
             throw $exception;
         }
     }
 
     private function validateUserProfileUpdateRequest(UserProfileUpdateRequest $request)
     {
-        if ($request->id = null || $request->name = null ||
-                trim($request->id) == "" || trim($request->name) == "") {
-            throw new  ValidationException("Id, Name can not blank");
+        if ($request->id == null || $request->name == null ||
+            trim($request->id) == "" || trim($request->name) == "") {
+            throw new ValidationException("Id, Name can not blank");
         }
     }
+
     public function updatePassword(UserPasswordUpdateRequest $request): UserPasswordUpdateResponse
     {
         $this->validateUserPasswordUpdateRequest($request);
@@ -141,6 +150,7 @@ class UserService
             throw $exception;
         }
     }
+
     private function validateUserPasswordUpdateRequest(UserPasswordUpdateRequest $request)
     {
         if ($request->id == null || $request->oldPassword == null || $request->newPassword == null ||

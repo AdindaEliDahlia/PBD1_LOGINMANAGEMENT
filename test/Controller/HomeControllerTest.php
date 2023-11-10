@@ -3,8 +3,12 @@
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller;
 
 use PHPUnit\Framework\TestCase;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Config\Database;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\Session;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\SessionRepository;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Service\SessionService;
 
 class HomeControllerTest extends TestCase
 {
@@ -12,9 +16,9 @@ class HomeControllerTest extends TestCase
     private UserRepository $userRepository;
     private SessionRepository $sessionRepository;
 
-    public function setUp(): void
+    protected function setUp():void
     {
-        $this->homeController = new HomeContorller();
+        $this->homeController = new HomeController();
         $this->sessionRepository = new SessionRepository(Database::getConnection());
         $this->userRepository = new UserRepository(Database::getConnection());
 
@@ -26,7 +30,7 @@ class HomeControllerTest extends TestCase
     {
         $this->homeController->index();
 
-        $this->expectOutRegex("[Login Management]");
+        $this->expectOutputRegex("[Login Management]");
     }
 
     public function testUserLogin()
@@ -46,7 +50,7 @@ class HomeControllerTest extends TestCase
 
         $this->homeController->index();
 
-        $this->expectOutRegex("[Hello Eko]");
+        $this->expectOutputRegex("[Hello Eko]");
     }
 
 }

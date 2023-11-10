@@ -8,7 +8,7 @@ use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\SessionRepository;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Service\SessionService;
 
-class MustLoginMiddleware implements Middleware
+class MustNotLoginMiddleware implements Middleware
 {
     private SessionService $sessionService;
 
@@ -22,8 +22,8 @@ class MustLoginMiddleware implements Middleware
     function before(): void
     {
         $user = $this->sessionService->current();
-        if ($user == null) {
-            View::redirect('/users/login');
+        if ($user != null) {
+            View::redirect('/');
         }
     }
 }

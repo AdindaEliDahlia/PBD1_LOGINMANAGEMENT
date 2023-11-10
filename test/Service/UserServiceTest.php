@@ -2,21 +2,31 @@
 
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Service;
 
+use PHPUnit\Framework\TestCase;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Config\Database;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Exception\ValidationException;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserLoginRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserPasswordUpdateRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserRegisterRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\SessionRepository;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
 
-class UserServiceTest
+class UserServiceTest extends TestCase
 {
     private UserService $userService;
     private UserRepository $userRepository;
+    private SessionRepository $sessionRepository;
 
-    protected function setUp(): void
+    protected function setUp():void
     {
         $connection = Database::getConnection();
         $this->userRepository = new UserRepository($connection);
         $this->userService = new UserService($this->userRepository);
+        $this->sessionRepository = new SessionRepository($connection);
 
+        $this->sessionRepository->deleteAll();
         $this->userRepository->deleteAll();
     }
 
@@ -38,17 +48,17 @@ class UserServiceTest
 
     public function testRegisterFailed()
     {
-        $this->expectException(\ValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $request = new UserRegisterRequest();
         $request->id = "";
         $request->name = "";
         $request->password = "";
 
-        $response = $this->userService->register($request);
+        $this->userService->register($request);
     }
 
-    public function testRegiserDuplicate()
+    public function testRegisterDuplicate()
     {
         $user = new User();
         $user->id = "eko";
@@ -57,7 +67,7 @@ class UserServiceTest
 
         $this->userRepository->save($user);
 
-        $this->expectException(\ValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $request = new UserRegisterRequest();
         $request->id = "eko";
@@ -78,14 +88,12 @@ class UserServiceTest
         $this->userService->login($request);
     }
 
-    public function testLoginwrongPassword()
+    public function testLoginWrongPassword()
     {
-
         $user = new User();
         $user->id = "eko";
         $user->name = "Eko";
         $user->password = password_hash("eko", PASSWORD_BCRYPT);
-
 
         $this->expectException(ValidationException::class);
 
@@ -103,7 +111,6 @@ class UserServiceTest
         $user->name = "Eko";
         $user->password = password_hash("eko", PASSWORD_BCRYPT);
 
-
         $this->expectException(ValidationException::class);
 
         $request = new UserLoginRequest();
@@ -113,8 +120,9 @@ class UserServiceTest
         $response = $this->userService->login($request);
 
         self::assertEquals($request->id, $response->user->id);
-        self::assertTrue($request->password . $response->user->password);
+        self::assertTrue(password_verify($request->password, $response->user->password));
     }
+
     public function testUpdateSuccess()
     {
         $user = new User();
@@ -155,6 +163,7 @@ class UserServiceTest
 
         $this->userService->updateProfile($request);
     }
+
     public function testUpdatePasswordSuccess()
     {
         $user = new User();

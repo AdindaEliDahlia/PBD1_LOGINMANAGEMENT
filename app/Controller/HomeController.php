@@ -3,11 +3,14 @@
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller;
 
 use ProgrammerZamanNow\Belajar\PHP\MVC\App\View;
-use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\Session;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Config\Database;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\SessionRepository;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Service\SessionService;
 
 class HomeController
 {
+
     private SessionService $sessionService;
 
     public function __construct()
@@ -16,8 +19,8 @@ class HomeController
         $sessionRepository = new SessionRepository($connection);
         $userRepository = new UserRepository($connection);
         $this->sessionService = new SessionService($sessionRepository, $userRepository);
-
     }
+
 
     function index()
     {
@@ -26,7 +29,6 @@ class HomeController
             View::render('Home/index', [
                 "title" => "PHP Login Management"
             ]);
-
         } else {
             View::render('Home/dashboard', [
                 "title" => "Dashboard",
@@ -36,4 +38,5 @@ class HomeController
             ]);
         }
     }
+
 }

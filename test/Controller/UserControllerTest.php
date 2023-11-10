@@ -1,17 +1,18 @@
 <?php
 
+
+
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
 
-    require_once __DIR__ . '/../helper/helper.php';
+    require_once __DIR__ . '/../Helper/helper.php';
 
-    use http\Exception;
     use PHPUnit\Framework\TestCase;
-    use ProgrammerZamanNow\Belajar\PHP\MVC\config\Database;
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Config\Database;
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\Session;
     use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
-    use ProgrammerZamanNow\Belajar\PHP\MVC\Exception\ValidationException;
-    use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\SessionRepository;
     use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
-
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Service\SessionService;
 
     class UserControllerTest extends TestCase
     {
@@ -23,7 +24,7 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
         {
             $this->userController = new UserController();
 
-            $this->sessionRepository = new SessionRepository(Database::getconnection());
+            $this->sessionRepository = new SessionRepository(Database::getConnection());
             $this->sessionRepository->deleteAll();
 
             $this->userRepository = new UserRepository(Database::getConnection());
@@ -51,7 +52,7 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
 
             $this->userController->postRegister();
 
-            $this->expectOutputRegex("[Location:: /users/login]");
+            $this->expectOutputRegex("[Location: /users/login]");
         }
 
         public function testPostRegisterValidationError()
@@ -73,17 +74,17 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
         public function testPostRegisterDuplicate()
         {
             $user = new User();
-            $user->id = 'eko';
-            $user->name = 'Eko';
-            $user->password = 'rahasia';
+            $user->id = "eko";
+            $user->name = "Eko";
+            $user->password = "rahasia";
 
-            $this->userRepository->save();
+            $this->userRepository->save($user);
 
             $_POST['id'] = 'eko';
             $_POST['name'] = 'Eko';
             $_POST['password'] = 'rahasia';
 
-            $this->userController->getRegister();
+            $this->userController->postRegister();
 
             $this->expectOutputRegex("[Register]");
             $this->expectOutputRegex("[Id]");
@@ -100,12 +101,10 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
             $this->expectOutputRegex("[Login user]");
             $this->expectOutputRegex("[Id]");
             $this->expectOutputRegex("[Password]");
-
         }
 
         public function testLoginSuccess()
         {
-
             $user = new User();
             $user->id = "eko";
             $user->name = "Eko";
@@ -118,7 +117,7 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
 
             $this->userController->postLogin();
 
-            $this->expectOutputRegex("[Location:/]");
+            $this->expectOutputRegex("[Location: /]");
             $this->expectOutputRegex("[X-PZN-SESSION: ]");
         }
 
@@ -126,6 +125,7 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
         {
             $_POST['id'] = '';
             $_POST['password'] = '';
+
             $this->userController->postLogin();
 
             $this->expectOutputRegex("[Login user]");
@@ -136,19 +136,19 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
 
         public function testLoginUserNotFound()
         {
-            $_POST['id'] = 'not found';
-            $_POST['password'] = 'not found';
+            $_POST['id'] = 'notfound';
+            $_POST['password'] = 'notfound';
+
             $this->userController->postLogin();
 
             $this->expectOutputRegex("[Login user]");
             $this->expectOutputRegex("[Id]");
             $this->expectOutputRegex("[Password]");
-            $this->expectOutputRegex("[Id and password is wrong]");
+            $this->expectOutputRegex("[Id or password is wrong]");
         }
 
         public function testLoginWrongPassword()
         {
-
             $user = new User();
             $user->id = "eko";
             $user->name = "Eko";
@@ -158,12 +158,13 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
 
             $_POST['id'] = 'eko';
             $_POST['password'] = 'salah';
+
             $this->userController->postLogin();
 
             $this->expectOutputRegex("[Login user]");
             $this->expectOutputRegex("[Id]");
             $this->expectOutputRegex("[Password]");
-            $this->expectOutputRegex("[Id or Password is wrong]");
+            $this->expectOutputRegex("[Id or password is wrong]");
         }
 
         public function testLogout()
@@ -185,47 +186,8 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
 
             $this->expectOutputRegex("[Location: /]");
             $this->expectOutputRegex("[X-PZN-SESSION: ]");
-
         }
 
-        public function testUpdateSuccess()
-        {
-            $user = new User();
-            $user->id = "eko";
-            $user->name = "Eko";
-            $user->password = password_hash("rahasia", PASSWORD_BCRYPT);
-            $this->userRepository->save($user);
-
-            $request = new UserProfileUpdateRequest();
-            $request->id = "eko";
-            $request->name = "Budi";
-
-            $this->userService->updateProfile($request);
-            $result = $this->userRepository->findById($user->id);
-
-            self::ossertEquals($request->name, $result->name);
-
-        }
-
-        public function testUpdateValidationError()
-        {
-            $this->expectException(ValidationException::class);
-            $request = new UserProfileUpdateRequest();
-            $request->id = "";
-            $request->name = "";
-
-            $this->userService->updateProfile($request);
-        }
-        public function testUpdateNotFound()
-        {
-            $this->expectException(ValidationException::class);
-            $request = new UserProfileUpdateRequest();
-            $request->id = "eko";
-            $request->name = "Budi";
-
-            $this->userService->updateProfile($request);
-
-        }
         public function testUpdateProfile()
         {
             $user = new User();
@@ -249,6 +211,7 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
             $this->expectOutputRegex("[Name]");
             $this->expectOutputRegex("[Eko]");
         }
+
         public function testPostUpdateProfileSuccess()
         {
             $user = new User();
@@ -297,6 +260,7 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Controller {
             $this->expectOutputRegex("[Name]");
             $this->expectOutputRegex("[Id, Name can not blank]");
         }
+
         public function testUpdatePassword()
         {
             $user = new User();

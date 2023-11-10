@@ -8,9 +8,10 @@ class ViewTest extends TestCase
 {
     public function testRender()
     {
-        View::render('Home/index',[
+        View::render('Home/index', [
             "PHP Login Management"
         ]);
+
         $this->expectOutputRegex('[PHP Login Management]');
         $this->expectOutputRegex('[html]');
         $this->expectOutputRegex('[body]');

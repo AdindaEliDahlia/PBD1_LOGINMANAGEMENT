@@ -1,24 +1,25 @@
 <?php
 
-
 namespace ProgrammerZamanNow\Belajar\PHP\MVC\Middleware {
 
-    require_once __DIR__ . '/../helper/helper.php';
+    require_once __DIR__ . '/../Helper/helper.php';
 
-    use mysql_xdevapi\Session;
     use PHPUnit\Framework\TestCase;
-    use ProgrammerZamanNow\Belajar\PHP\MVC\config\Database;
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Config\Database;
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\Session;
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
     use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\SessionRepository;
     use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
+    use ProgrammerZamanNow\Belajar\PHP\MVC\Service\SessionService;
 
     class MustLoginMiddlewareTest extends TestCase
     {
+
         private MustLoginMiddleware $middleware;
         private UserRepository $userRepository;
         private SessionRepository $sessionRepository;
 
-
-        protected function setUp(): void
+        protected function setUp():void
         {
             $this->middleware = new MustLoginMiddleware();
             putenv("mode=test");
@@ -33,7 +34,6 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Middleware {
         public function testBeforeGuest()
         {
             $this->middleware->before();
-
             $this->expectOutputRegex("[Location: /users/login]");
         }
 
@@ -50,8 +50,13 @@ namespace ProgrammerZamanNow\Belajar\PHP\MVC\Middleware {
             $session->userId = $user->id;
             $this->sessionRepository->save($session);
 
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
             $this->middleware->before();
             $this->expectOutputString("");
         }
+
     }
 }
+
+

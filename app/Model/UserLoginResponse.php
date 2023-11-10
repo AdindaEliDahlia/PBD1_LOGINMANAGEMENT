@@ -6,6 +6,5 @@ use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
 
 class UserLoginResponse
 {
-    public  User $user;
-
+    public User $user;
 }
